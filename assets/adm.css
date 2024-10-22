@@ -1,0 +1,78 @@
+body {
+    background-color: #f0f2f5;
+    font-family: 'Roboto', sans-serif;
+}
+.navbar {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+.dashboard-cards {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 30px;
+    margin-bottom: 40px;
+}
+.card {
+    flex: 1;
+    min-width: 200px;
+    background-color: #fff;
+    border-radius: 15px;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+.card:hover {
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
+    transform: scale(1.05);
+}
+.card i {
+    font-size: 3rem;
+    margin-bottom: 15px;
+    color: #007bff;
+}
+.table-container {
+    background-color: #fff;
+    padding: 25px;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+.btn-primary {
+    background: linear-gradient(to right, #007bff, #0056b3);
+    border: none;
+    transition: all 0.3s ease;
+}
+.btn-primary:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 8px rgba(0, 123, 255, 0.4);
+}
+.btn-danger:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 8px rgba(220, 53, 69, 0.4);
+}
+.navbar-brand img {
+    width: 70px;
+    height: 70px;
+}
+.navbar-brand span {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #007bff;
+}
+.badge-status {
+    padding: 0.5em 1em;
+    border-radius: 12px;
+    font-size: 0.9em;
+}
+.badge-status.agendado {
+    background-color: #007bff;
+    color: white;
+}
+.badge-status.concluido {
+    background-color: #28a745;
+    color: white;
+}
+.badge-status.cancelado {
+    background-color: #dc3545;
+    color: white;
+}

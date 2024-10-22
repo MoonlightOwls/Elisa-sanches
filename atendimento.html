@@ -13,20 +13,39 @@
 </head>
 <body>
 
-    <nav class="navbar navbar-expand-lg navbar-dark"> 
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top">
         <div class="container">
-            <a class="navbar-brand" href="./index.html">
-                <img src="./assets/cartao-logo-odontoprime3.jpeg" alt="Logo Odonto Prime" class="rounded-circle"> 
+            <a class="navbar-brand d-flex align-items-center" href="#">
+                <img src="assets/images-removebg-preview (1).png" alt="Odonto Prime Logo" width="70" height="70" class="d-inline-block align-top me-2">
+                <span class="fw-bold text-primary">Império Odontologia</span>
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto"> 
-                    <li class="nav-item"><a class="nav-link" href="./index.html">Página Principal</a></li>
-                    <li class="nav-item"><a class="nav-link" href="./sobre.html">Sobre a clínica</a></li>
-                    <li class="nav-item"><a class="nav-link active" aria-current="page" href="./atendimento.html">Horário de Atendimento</a></li>
-                    <li class="nav-item"><a class="nav-link" href="./contato.html">Contato</a></li>
+                <ul class="navbar-nav ms-auto align-items-center">
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="#">Início</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="servicesDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            Serviços
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="servicesDropdown">
+                            <li><a class="dropdown-item" href="#">Limpeza</a></li>
+                            <li><a class="dropdown-item" href="#">Clareamento</a></li>
+                            <li><a class="dropdown-item" href="#">Implantes</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Equipe</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Contato</a>
+                    </li>
+                    <li class="nav-item ms-lg-3 mt-2 mt-lg-0">
+                        <a class="btn btn-primary" href="#">Agendar Consulta</a>
+                    </li>
                 </ul>
             </div>
         </div>
