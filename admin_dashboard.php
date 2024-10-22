@@ -36,7 +36,7 @@ $total_users_stmt->execute();
 $total_users = $total_users_stmt->get_result()->fetch_assoc()['total_users'];
 $total_users_stmt->close();
 
-/
+
 $total_appointments_stmt = $conn->prepare("SELECT COUNT(*) AS total_appointments FROM appointments");
 $total_appointments_stmt->execute();
 $total_appointments = $total_appointments_stmt->get_result()->fetch_assoc()['total_appointments'];
