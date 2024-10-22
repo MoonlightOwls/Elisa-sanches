@@ -7,7 +7,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $email = $_POST['email'];
         $password = $_POST['password'];
 
-        // Consulta para buscar o usuário e verificar se é administrador
+       
         $stmt = $conn->prepare("SELECT * FROM users WHERE email = ?");
         $stmt->bind_param("s", $email);
         $stmt->execute();
@@ -16,15 +16,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($result->num_rows > 0) {
             $user = $result->fetch_assoc();
             
-            // Verificar se a senha está correta
+           
             if (password_verify($password, $user['password'])) {
                 $_SESSION['user_id'] = $user['id'];
                 $_SESSION['user_name'] = $user['full_name'];
-                $_SESSION['is_admin'] = $user['is_admin'];  // Verificar se é admin
+                $_SESSION['is_admin'] = $user['is_admin'];  
 
              
                 
-                // Redirecionar para o painel adequado
+                
                 if ($user['is_admin']) {
                     header("Location: admin_dashboard.php");
                 } else {
@@ -39,7 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 exit();
             }
         } else {
-            // E-mail não encontrado
+            
             $_SESSION['message'] = "Usuário não encontrado!";
             $_SESSION['message_type'] = "error";
             header("Location: login.php");
@@ -121,7 +121,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 });
             });
 
-            // Exibir notificações Toastr
+           
             <?php if (isset($_SESSION['message'])): ?>
                 toastr.options = {
                     "closeButton": true,
