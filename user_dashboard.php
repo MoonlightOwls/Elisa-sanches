@@ -119,7 +119,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_appointment'])
                         set_feedback_message("Erro interno. Tente novamente mais tarde.", 'danger');
                     } else {
                         set_feedback_message("Agendamento criado com sucesso!", 'success');
-                        // Redireciona para a página sem parâmetros de URL
+                        
                         header("Location: user_dashboard.php");
                         exit();
                     }
@@ -196,7 +196,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_appointment']) &
                         set_feedback_message("Erro interno. Tente novamente mais tarde.", 'danger');
                     } else {
                         set_feedback_message("Agendamento atualizado com sucesso!", 'success');
-                        // Redireciona para a página sem parâmetros de URL
+                        
                         header("Location: user_dashboard.php");
                         exit();
                     }
