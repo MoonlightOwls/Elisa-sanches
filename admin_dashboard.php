@@ -2,7 +2,6 @@
 session_start();
 require_once 'config.php';
 
-
 if (!isset($_SESSION['user_id']) || !$_SESSION['is_admin']) {
     $_SESSION['message'] = "Acesso negado. Área restrita para administradores.";
     $_SESSION['message_type'] = "danger";
@@ -10,11 +9,9 @@ if (!isset($_SESSION['user_id']) || !$_SESSION['is_admin']) {
     exit();
 }
 
-
 if (empty($_SESSION['csrf_token'])) {
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 }
-
 
 function buscarAgendamentos($conn) {
     $stmt = $conn->prepare("SELECT appointments.id, users.full_name, appointments.appointment_date, appointments.appointment_time, services.name AS service_name, appointments.notes, appointments.status FROM appointments JOIN users ON appointments.user_id = users.id JOIN services ON appointments.service = services.id ORDER BY appointment_date, appointment_time");
@@ -36,14 +33,12 @@ $total_users_stmt->execute();
 $total_users = $total_users_stmt->get_result()->fetch_assoc()['total_users'];
 $total_users_stmt->close();
 
-
 $total_appointments_stmt = $conn->prepare("SELECT COUNT(*) AS total_appointments FROM appointments");
 $total_appointments_stmt->execute();
 $total_appointments = $total_appointments_stmt->get_result()->fetch_assoc()['total_appointments'];
 $total_appointments_stmt->close();
 
 $agendamentos = buscarAgendamentos($conn);
-
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['editar_agendamento'])) {
     $appointment_id = $_POST['appointment_id'];
@@ -52,8 +47,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['editar_agendamento']))
     $notes = $_POST['notes'];
     $status = $_POST['status'];
 
-    // n funfa de jeito nenhum
-    $valid_statuses = ['agendado', 'concluido', 'cancelado'];
+    $valid_statuses = ['Agendado', 'Completo', 'Cancelado'];
     if (!in_array($status, $valid_statuses)) {
         $_SESSION['message'] = "Status inválido.";
         $_SESSION['message_type'] = "danger";
@@ -75,7 +69,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['editar_agendamento']))
     exit();
 }
 
-
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['excluir_agendamento'])) {
     $appointment_id = $_POST['appointment_id'];
 
@@ -92,7 +85,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['excluir_agendamento'])
     header("Location: admin_dashboard.php");
     exit();
 }
-
 
 function buscarUsuarios($conn) {
     $stmt = $conn->prepare("SELECT id, full_name, email, is_admin FROM users ORDER BY full_name");
@@ -111,7 +103,6 @@ function buscarUsuarios($conn) {
 
 $usuarios = buscarUsuarios($conn);
 
-
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['alterar_permissao'])) {
     $user_id = $_POST['user_id'];
     $is_admin = $_POST['is_admin'] == '1' ? 1 : 0;
@@ -129,7 +120,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['alterar_permissao'])) 
     header("Location: admin_dashboard.php");
     exit();
 }
-
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['excluir_usuario'])) {
     $user_id = $_POST['user_id'];
@@ -161,7 +151,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['excluir_usuario'])) {
     <link rel="stylesheet" href="assets/style.css">
     <link rel="stylesheet" href="assets/adm.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
-    
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top">
@@ -187,7 +176,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['excluir_usuario'])) {
     </nav>
 
     <main class="container mt-5">
-        
         <div class="dashboard-cards">
             <div class="card">
                 <i class="bi bi-people-fill"></i>
@@ -206,7 +194,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['excluir_usuario'])) {
             </div>
         </div>
 
-        
         <div class="table-container mt-5">
             <h4>Todos os Agendamentos</h4>
             <?php if (count($agendamentos) == 0): ?>
@@ -236,9 +223,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['excluir_usuario'])) {
                                     <td><?= htmlspecialchars($agendamento['appointment_time']) ?></td>
                                     <td><?= htmlspecialchars($agendamento['notes']) ?></td>
                                     <td>
-                                        <span class="badge-status <?= htmlspecialchars($agendamento['status']) ?>">
-                                            <?= htmlspecialchars($agendamento['status']) ?>
-                                        </span>
+                                        <?php if ($agendamento['status'] == 'Agendado'): ?>
+                                            <span class="badge bg-info"><i class="bi bi-calendar-event"></i> <?= htmlspecialchars($agendamento['status']) ?></span>
+                                        <?php elseif ($agendamento['status'] == 'Completo'): ?>
+                                            <span class="badge bg-success"><i class="bi bi-check-circle-fill"></i> <?= htmlspecialchars($agendamento['status']) ?></span>
+                                        <?php elseif ($agendamento['status'] == 'Cancelado'): ?>
+                                            <span class="badge bg-danger"><i class="bi bi-x-circle-fill"></i> <?= htmlspecialchars($agendamento['status']) ?></span>
+                                        <?php endif; ?>
                                     </td>
                                     <td>
                                         <button class="btn btn-warning btn-sm me-2" data-bs-toggle="modal" data-bs-target="#editarAgendamentoModal" data-id="<?= $agendamento['id'] ?>" data-date="<?= $agendamento['appointment_date'] ?>" data-time="<?= $agendamento['appointment_time'] ?>" data-notes="<?= htmlspecialchars($agendamento['notes']) ?>" data-status="<?= $agendamento['status'] ?>"><i class="bi bi-pencil"></i> Editar</button>
@@ -255,7 +246,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['excluir_usuario'])) {
             <?php endif; ?>
         </div>
 
-    
         <div class="table-container mt-5">
             <h4>Todos os Usuários</h4>
             <?php if (count($usuarios) == 0): ?>
@@ -301,7 +291,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['excluir_usuario'])) {
         </div>
     </main>
 
-   
     <div class="modal fade" id="editarAgendamentoModal" tabindex="-1" aria-labelledby="editarAgendamentoModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -327,9 +316,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['excluir_usuario'])) {
                         <div class="mb-3">
                             <label for="editStatus" class="form-label">Status</label>
                             <select class="form-select" id="editStatus" name="status" required>
-                                <option value="agendado">Agendado</option>
-                                <option value="concluido">Concluído</option>
-                                <option value="cancelado">Cancelado</option>
+                                <option value="Agendado">Agendado</option>
+                                <option value="Completo">Completo</option>
+                                <option value="Cancelado">Cancelado</option>
                             </select>
                         </div>
                         <button type="submit" class="btn btn-primary" name="editar_agendamento">Salvar Alterações</button>
@@ -349,7 +338,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['excluir_usuario'])) {
             $('#agendamentosTable').DataTable();
             $('#usuariosTable').DataTable();
 
-            
             $('#editarAgendamentoModal').on('show.bs.modal', function(event) {
                 var button = $(event.relatedTarget);
                 var id = button.data('id');
@@ -367,7 +355,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['excluir_usuario'])) {
             });
         });
 
-        
         <?php if (isset($_SESSION['message'])): ?>
             toastr.options = {
                 "closeButton": true,
