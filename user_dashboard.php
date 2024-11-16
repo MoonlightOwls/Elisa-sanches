@@ -2,16 +2,16 @@
 session_start();
 require_once 'config.php';
 
-
 function set_feedback_message($message, $type) {
     $_SESSION['feedback_message'] = htmlspecialchars($message);
     $_SESSION['feedback_type'] = htmlspecialchars($type);
 }
 
-
 function log_error($message) {
     error_log($message, 3, 'errors.log');
 }
+
+
 if (!isset($_SESSION['user_id']) || $_SESSION['is_admin']) {
     $_SESSION['message'] = "Acesso negado. Área restrita para usuários.";
     $_SESSION['message_type'] = "danger";
@@ -20,16 +20,9 @@ if (!isset($_SESSION['user_id']) || $_SESSION['is_admin']) {
 }
 
 
-//if (!isset($_SESSION['user_id'])) {
-    //header("Location: index.php");
-    //exit();
-//}
-
-
 if (empty($_SESSION['csrf_token'])) {
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 }
-
 
 $feedback_message = '';
 $feedback_type = 'info';
@@ -38,7 +31,6 @@ if (isset($_SESSION['feedback_message'])) {
     $feedback_type = $_SESSION['feedback_type'];
     unset($_SESSION['feedback_message'], $_SESSION['feedback_type']);
 }
-
 
 $user_id = $_SESSION['user_id'];
 $stmt = $conn->prepare("SELECT * FROM users WHERE id = ?");
@@ -50,7 +42,6 @@ $stmt->bind_param("i", $user_id);
 $stmt->execute();
 $user = $stmt->get_result()->fetch_assoc();
 $stmt->close();
-
 
 $appointments_stmt = $conn->prepare(
     "SELECT appointments.*, services.name AS service_name 
@@ -68,7 +59,6 @@ $appointments_stmt->execute();
 $appointments = $appointments_stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 $appointments_stmt->close();
 
-
 $services_stmt = $conn->prepare("SELECT id, name FROM services");
 if ($services_stmt === false) {
     log_error("Erro ao preparar a consulta para buscar serviços: " . $conn->error);
@@ -78,7 +68,7 @@ $services_stmt->execute();
 $services = $services_stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 $services_stmt->close();
 
-
+// Criação de novo agendamento
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_appointment']) && hash_equals($_SESSION['csrf_token'], $_POST['csrf_token'])) {
     $appointment_date = $_POST['appointment_date'];
     $appointment_time = $_POST['appointment_time'];
@@ -87,13 +77,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_appointment'])
     $patient_address = htmlspecialchars($_POST['patient_address'] ?? '');
     $patient_phone = htmlspecialchars($_POST['patient_phone'] ?? '');
 
-    
     if (empty($service_id) || !is_numeric($service_id)) {
         set_feedback_message("Erro: Serviço não foi selecionado corretamente.", 'danger');
     } elseif (strtotime($appointment_time) < strtotime('08:00') || strtotime($appointment_time) > strtotime('18:00')) {
         set_feedback_message("Erro: O horário deve estar entre 08:00 e 18:00.", 'danger');
     } else {
-        
         $check_stmt = $conn->prepare("SELECT COUNT(*) as count FROM appointments WHERE appointment_date = ? AND appointment_time = ?");
         if ($check_stmt === false) {
             log_error("Erro ao preparar a consulta para verificar conflitos de agendamento: " . $conn->error);
@@ -107,7 +95,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_appointment'])
             if ($result['count'] > 0) {
                 set_feedback_message("Erro: Já existe um agendamento para este dia e horário.", 'danger');
             } else {
-                $stmt = $conn->prepare("INSERT INTO appointments (user_id, service, appointment_date, appointment_time, notes, patient_address, patient_phone, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, 'scheduled', NOW())");
+                $stmt = $conn->prepare("INSERT INTO appointments (user_id, service, appointment_date, appointment_time, notes, patient_address, patient_phone, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, 'Agendado', NOW())");
                 if ($stmt === false) {
                     log_error("Erro ao preparar a consulta para criar agendamento: " . $conn->error);
                     set_feedback_message("Erro interno. Tente novamente mais tarde.", 'danger');
@@ -119,7 +107,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_appointment'])
                         set_feedback_message("Erro interno. Tente novamente mais tarde.", 'danger');
                     } else {
                         set_feedback_message("Agendamento criado com sucesso!", 'success');
-                        
                         header("Location: user_dashboard.php");
                         exit();
                     }
@@ -146,7 +133,6 @@ if (isset($_GET['delete_appointment']) && hash_equals($_SESSION['csrf_token'], $
             set_feedback_message("Erro interno. Tente novamente mais tarde.", 'danger');
         } else {
             set_feedback_message("Agendamento excluído com sucesso!", 'success');
-            
             header("Location: user_dashboard.php");
             exit();
         }
@@ -164,13 +150,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_appointment']) &
     $patient_address = htmlspecialchars($_POST['patient_address'] ?? '');
     $patient_phone = htmlspecialchars($_POST['patient_phone'] ?? '');
 
- 
     if (empty($service_id) || !is_numeric($service_id)) {
         set_feedback_message("Erro: Serviço não foi selecionado corretamente.", 'danger');
     } elseif (strtotime($appointment_time) < strtotime('08:00') || strtotime($appointment_time) > strtotime('18:00')) {
         set_feedback_message("Erro: O horário deve estar entre 08:00 e 18:00.", 'danger');
     } else {
-        
         $check_stmt = $conn->prepare("SELECT COUNT(*) as count FROM appointments WHERE appointment_date = ? AND appointment_time = ? AND id != ?");
         if ($check_stmt === false) {
             log_error("Erro ao preparar a consulta para verificar conflitos de agendamento: " . $conn->error);
@@ -196,7 +180,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_appointment']) &
                         set_feedback_message("Erro interno. Tente novamente mais tarde.", 'danger');
                     } else {
                         set_feedback_message("Agendamento atualizado com sucesso!", 'success');
-                        
                         header("Location: user_dashboard.php");
                         exit();
                     }
@@ -313,7 +296,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_appointment']) &
             </script>
         <?php endif; ?>
 
-
         <div class="appointment-section mb-5">
             <div class="d-flex align-items-center mb-4">
                 <i class="bi bi-calendar-check form-section-icon me-2"></i>
@@ -374,7 +356,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_appointment']) &
             </form>
         </div>
 
-        
         <h2>Meus Agendamentos</h2>
         <div class="table-responsive">
             <table class="table table-striped">
@@ -484,7 +465,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_appointment']) &
                 });
             });
 
-            // isso e corno
             <?php if (isset($_SESSION['message'])): ?>
             toastr.options = {
                 "closeButton": true,
@@ -499,7 +479,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_appointment']) &
             };
             toastr["<?= $_SESSION['message_type'] ?>"]("<?= htmlspecialchars($_SESSION['message']) ?>");
             <?php unset($_SESSION['message'], $_SESSION['message_type']); ?>
-        <?php endif; ?>
+            <?php endif; ?>
         });
     </script>
 
