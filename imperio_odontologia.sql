@@ -34,7 +34,7 @@ CREATE TABLE `appointments` (
   `appointment_date` date NOT NULL,
   `appointment_time` time NOT NULL,
   `notes` text DEFAULT NULL,
-  `status` enum('scheduled','completed','cancelled') DEFAULT 'scheduled',
+  `status` enum('Agendado','Completo','Cancelado') DEFAULT 'Agendado',
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `patient_address` varchar(255) NOT NULL,
   `patient_phone` varchar(20) NOT NULL
