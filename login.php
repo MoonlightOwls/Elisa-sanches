@@ -3,9 +3,10 @@ session_start();
 require_once 'config.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (isset($_POST['email'], $_POST['password'])) {
-        $email = $_POST['email'];
-        $password = $_POST['password'];
+    // Lógica de Login
+    if (isset($_POST['email'], $_POST['password']) && !isset($_POST['register_action'])) {
+        $email = trim($_POST['email']);
+        $password = trim($_POST['password']);
 
         $stmt = $conn->prepare("SELECT * FROM users WHERE email = ?");
         $stmt->bind_param("s", $email);
@@ -39,10 +40,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit();
         }
     }
-}
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (isset($_POST['full_name'], $_POST['email'], $_POST['password'], $_POST['confirm_password'])) {
+    // Lógica de Registro
+    if (isset($_POST['register_action']) && isset($_POST['full_name'], $_POST['email'], $_POST['password'], $_POST['confirm_password'])) {
         $full_name = trim($_POST['full_name']);
         $email = trim($_POST['email']);
         $password = trim($_POST['password']);
@@ -59,45 +59,40 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['message_type'] = "error";
         } else {
             $stmt = $conn->prepare("SELECT id FROM users WHERE email = ?");
-            if ($stmt === false) {
-                error_log("Erro na preparação da consulta: " . $conn->error);
-                $_SESSION['message'] = "Erro ao verificar e-mail.";
+            $stmt->bind_param("s", $email);
+            $stmt->execute();
+            $stmt->store_result();
+
+            if ($stmt->num_rows > 0) {
+                $_SESSION['message'] = "E-mail já cadastrado.";
                 $_SESSION['message_type'] = "error";
             } else {
-                $stmt->bind_param("s", $email);
-                $stmt->execute();
-                $stmt->store_result();
-                if ($stmt->num_rows > 0) {
-                    $_SESSION['message'] = "E-mail já cadastrado.";
+                $password_hashed = password_hash($password, PASSWORD_DEFAULT);
+                $stmt = $conn->prepare("INSERT INTO users (full_name, email, password) VALUES (?, ?, ?)");
+
+                if ($stmt === false) {
+                    error_log("Erro na preparação da consulta: " . $conn->error);
+                    $_SESSION['message'] = "Erro ao realizar o registro.";
                     $_SESSION['message_type'] = "error";
                 } else {
-                    $password_hashed = password_hash($password, PASSWORD_DEFAULT);
-
-                    $stmt = $conn->prepare("INSERT INTO users (full_name, email, password) VALUES (?, ?, ?)");
-                    if ($stmt === false) {
-                        error_log("Erro na preparação da consulta: " . $conn->error);
+                    $stmt->bind_param("sss", $full_name, $email, $password_hashed);
+                    if ($stmt->execute()) {
+                        $_SESSION['message'] = "Registro realizado com sucesso! Faça login para continuar.";
+                        $_SESSION['message_type'] = "success";
+                    } else {
+                        error_log("Erro ao executar a consulta: " . $stmt->error);
                         $_SESSION['message'] = "Erro ao realizar o registro.";
                         $_SESSION['message_type'] = "error";
-                    } else {
-                        $stmt->bind_param("sss", $full_name, $email, $password_hashed);
-                        if ($stmt->execute()) {
-                            $_SESSION['message'] = "Registro realizado com sucesso!";
-                            $_SESSION['message_type'] = "success";
-                        } else {
-                            error_log("Erro ao executar a consulta: " . $stmt->error);
-                            $_SESSION['message'] = "Erro ao realizar o registro.";
-                            $_SESSION['message_type'] = "error";
-                        }
                     }
                 }
-                $stmt->close();
             }
+            $stmt->close();
         }
+        header("Location: login.php");
+        exit();
     }
-}
 
-// Adicionando funcionalidade de recuperação de senha
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Lógica de Recuperação de Senha
     if (isset($_POST['reset_email'])) {
         $reset_email = trim($_POST['reset_email']);
 
@@ -106,47 +101,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['message_type'] = "error";
         } else {
             $stmt = $conn->prepare("SELECT id FROM users WHERE email = ?");
-            if ($stmt === false) {
-                error_log("Erro na preparação da consulta: " . $conn->error);
-                $_SESSION['message'] = "Erro ao verificar e-mail.";
-                $_SESSION['message_type'] = "error";
-            } else {
-                $stmt->bind_param("s", $reset_email);
-                $stmt->execute();
-                $stmt->store_result();
-                if ($stmt->num_rows > 0) {
-                    // Enviar um e-mail com um link de redefinição de senha
-                    $reset_token = bin2hex(random_bytes(16));
-                    $stmt = $conn->prepare("UPDATE users SET reset_token = ? WHERE email = ?");
-                    if ($stmt === false) {
-                        error_log("Erro na preparação da consulta: " . $conn->error);
-                        $_SESSION['message'] = "Erro ao gerar token de redefinição de senha.";
-                        $_SESSION['message_type'] = "error";
-                    } else {
-                        $stmt->bind_param("ss", $reset_token, $reset_email);
-                        if ($stmt->execute()) {
-                            // Aqui você enviaria o e-mail de verdade
-                            $reset_link = "http://seusite.com/reset_password.php?token=" . $reset_token;
-                            // Exemplificando envio de e-mail (fictício)
-                            mail($reset_email, "Redefinição de senha", "Clique no link para redefinir sua senha: " . $reset_link);
-                            $_SESSION['message'] = "Link de redefinição de senha enviado para o seu e-mail.";
-                            $_SESSION['message_type'] = "success";
-                        } else {
-                            error_log("Erro ao executar a consulta: " . $stmt->error);
-                            $_SESSION['message'] = "Erro ao gerar token de redefinição de senha.";
-                            $_SESSION['message_type'] = "error";
-                        }
-                    }
+            $stmt->bind_param("s", $reset_email);
+            $stmt->execute();
+            $stmt->store_result();
+
+            if ($stmt->num_rows > 0) {
+                $reset_token = bin2hex(random_bytes(16));
+                $stmt = $conn->prepare("UPDATE users SET reset_token = ? WHERE email = ?");
+                $stmt->bind_param("ss", $reset_token, $reset_email);
+
+                if ($stmt->execute()) {
+                    $reset_link = "http://seusite.com/reset_password.php?token=" . $reset_token;
+                    mail($reset_email, "Redefinição de senha", "Clique no link para redefinir sua senha: " . $reset_link);
+                    $_SESSION['message'] = "Link de redefinição de senha enviado para o seu e-mail.";
+                    $_SESSION['message_type'] = "success";
                 } else {
-                    $_SESSION['message'] = "E-mail não encontrado.";
+                    error_log("Erro ao executar a consulta: " . $stmt->error);
+                    $_SESSION['message'] = "Erro ao gerar token de redefinição de senha.";
                     $_SESSION['message_type'] = "error";
                 }
-                $stmt->close();
+            } else {
+                $_SESSION['message'] = "E-mail não encontrado.";
+                $_SESSION['message_type'] = "error";
             }
+            $stmt->close();
         }
+        header("Location: login.php");
+        exit();
     }
 }
 ?>
+
 
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -187,19 +172,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <button type="submit" class="btn btn-auth">Entrar</button>
             </form>
 
-            <form id="registerForm" class="auth-form" action="register.php" method="POST">
-                <input type="text" name="full_name" class="form-control" placeholder="Nome completo" required>
-                <input type="email" name="email" class="form-control" placeholder="E-mail" required>
-                <input type="password" name="password" class="form-control" placeholder="Senha" required>
-                <input type="password" name="confirm_password" class="form-control" placeholder="Confirme a senha" required>
-                <div class="form-check mb-3">
-                    <input type="checkbox" class="form-check-input" id="termsAgree" required>
-                    <label class="form-check-label" for="termsAgree">
-                        Concordo com os <a href="#" class="forgot-password">termos e condições</a>
-                    </label>
-                </div>
-                <button type="submit" class="btn btn-auth">Cadastrar</button>
-            </form>
+            <form id="registerForm" class="auth-form" action="login.php" method="POST">
+    <input type="hidden" name="register_action" value="register">
+    <input type="text" name="full_name" class="form-control" placeholder="Nome completo" required>
+    <input type="email" name="email" class="form-control" placeholder="E-mail" required>
+    <input type="password" name="password" class="form-control" placeholder="Senha" required>
+    <input type="password" name="confirm_password" class="form-control" placeholder="Confirme a senha" required>
+    <div class="form-check mb-3">
+        <input type="checkbox" class="form-check-input" id="termsAgree" required>
+        <label class="form-check-label" for="termsAgree">
+            Concordo com os <a href="#" class="forgot-password">termos e condições</a>
+        </label>
+    </div>
+    <button type="submit" class="btn btn-auth">Cadastrar</button>
+</form>
 
             <form id="resetForm" class="auth-form" action="reset_password.php" method="POST" style="display: none;">
                 <input type="email" name="reset_email" class="form-control" placeholder="E-mail para recuperação" required>
