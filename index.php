@@ -27,21 +27,17 @@
                     <li class="nav-item">
                         <a class="nav-link active" aria-current="page" href="#">Início</a>
                     </li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="servicesDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            Serviços
-                        </a>
-                        <ul class="dropdown-menu" aria-labelledby="servicesDropdown">
-                            <li><a class="dropdown-item" href="#">Limpeza</a></li>
-                            <li><a class="dropdown-item" href="#">Clareamento</a></li>
-                            <li><a class="dropdown-item" href="#">Implantes</a></li>
-                        </ul>
-                    </li>
+
                     <li class="nav-item">
-                        <a class="nav-link" href="#">Equipe</a>
+                        <a class="nav-link " href="#tratamentos">Servicos</a>
                     </li>
+                    
                     <li class="nav-item">
-                        <a class="nav-link" href="#">Contato</a>
+                        <a class="nav-link" href="#Equipe">Equipe</a>
+                    </li>
+                   
+                    <li class="nav-item">
+                        <a class="nav-link" href="#contato">Contato</a>
                     </li>
                     <li class="nav-item ms-lg-3 mt-2 mt-lg-0">
                         <a class="btn btn-primary" href="login.php">Agendar Consulta</a>
@@ -90,7 +86,7 @@
     </section>
 
    
-    <section class="sobre-mim py-5">
+    <section class="sobre-mim py-5" id="Equipe">
         <div class="container">
             <div class="row align-items-center">
                 <div class="col-md-5 text-center mb-4 mb-md-0">
@@ -116,7 +112,7 @@
             </div>
         </div>
     </section>
-    <section class="treatments-section">
+    <section class="treatments-section" id="tratamentos">
         <div class="container">
             <h2>Conheça Nossos Tratamentos</h2>
             <div class="treatment-grid">
@@ -148,7 +144,7 @@
         </div>
     </section>
 
-    <footer class="footer-section bg-dark text-light py-5">
+    <footer class="footer-section bg-dark text-light py-5" id="contato">
         <div class="container">
             <div class="row">
                 <div class="col-md-4 mb-4 mb-md-0">
